@@ -18,7 +18,18 @@ const findUserByEmail = async (email) => {
     return result.rows[0];
 };
 
+const updateUserToken = async (userId, token) => {
+    const query = `
+    UPDATE users
+    SET token = $1
+    WHERE id = $2
+    `;
+
+    await db.query(query, [token, userId]);
+};
+
 module.exports = {
     createUser,
     findUserByEmail,
+    updateUserToken,
 };
