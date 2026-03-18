@@ -12,6 +12,6 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 
-app.use("/api/v1/auth", authRoutes);
+app.use("/auth", authRoutes);
 
 module.exports = app;

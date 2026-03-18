@@ -20,7 +20,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use("/api/emails", emailRoutes);
+app.use("/emails", emailRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

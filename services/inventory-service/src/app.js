@@ -20,7 +20,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use("/api/inventory", inventoryRoutes);
+app.use("/inventory", inventoryRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

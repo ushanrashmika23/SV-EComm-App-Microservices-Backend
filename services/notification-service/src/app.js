@@ -20,7 +20,7 @@ app.get("/health", (req, res) => {
   });
 });
 
-app.use("/api/notifications", notificationRoutes);
+app.use("/notifications", notificationRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
