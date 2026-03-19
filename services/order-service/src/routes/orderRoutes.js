@@ -1,12 +1,13 @@
 const express = require("express");
 const orderController = require("../controllers/orderController");
+const { authorizeRoles } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-router.post("/", orderController.createOrder);
-router.get("/user/:userId", orderController.getOrdersByUser);
-router.get("/:id", orderController.getOrderById);
-router.put("/:id/status", orderController.updateOrderStatus);
-router.put("/:id/cancel", orderController.cancelOrder);
+router.post("/", authorizeRoles(["admin", "customer"]), orderController.createOrder);
+router.get("/user/:userId", authorizeRoles(["admin", "customer"]), orderController.getOrdersByUser);
+router.get("/:id", authorizeRoles(["admin", "customer"]), orderController.getOrderById);
+router.put("/:id/status", authorizeRoles(["admin"]), orderController.updateOrderStatus);
+router.put("/:id/cancel", authorizeRoles(["admin", "customer"]), orderController.cancelOrder);
 
 module.exports = router;

@@ -1,9 +1,27 @@
 const orderService = require("../services/orderService");
+const { publishOrderCreated } = require("../messaging/rabbitmq");
 
 const createOrder = async (req, res, next) => {
     try {
         const order = await orderService.createOrder(req.body);
         console.log(`[OrderService] Order created: ${order._id}`);
+
+        const orderData = order.toObject ? order.toObject() : order;
+        const customerEmail = req.body.customerEmail || req.body.email || req.body.shippingAddress?.email || null;
+
+        try {
+            await publishOrderCreated({
+                eventType: "order.created",
+                occurredAt: new Date().toISOString(),
+                order: {
+                    ...orderData,
+                    customerEmail,
+                },
+            });
+            console.log(`[OrderService] Event published: order.created (${order._id})`);
+        } catch (publishError) {
+            console.error(`[OrderService] Failed to publish order.created for ${order._id}:`, publishError.message);
+        }
 
         return res.status(201).json({
             success: true,
@@ -17,7 +35,7 @@ const createOrder = async (req, res, next) => {
 
 const getOrdersByUser = async (req, res, next) => {
     try {
-        const { userId } = req.params;
+        const userId = req.auth?.userId || req.params.userId;
         const orders = await orderService.getOrdersByUser(userId);
 
         return res.status(200).json({

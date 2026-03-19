@@ -1,4 +1,5 @@
 const { createProxyMiddleware } = require("http-proxy-middleware");
+const { authorize } = require("../middlewares/authMiddleware");
 
 const SERVICES = {
   auth: process.env.AUTH_SERVICE || "http://localhost:4001",
@@ -29,11 +30,26 @@ const buildProxy = (target, pathRewrite) => {
     onProxyReq: (proxyReq, req) => {
       proxyReq.setHeader("x-gateway-source", "api-gateway");
       proxyReq.setHeader("x-request-path", req.originalUrl);
+
+      if (req.user && req.user.userId) {
+        proxyReq.setHeader("x-user-id", String(req.user.userId));
+      }
+
+      if (req.user && req.user.role) {
+        proxyReq.setHeader("x-user-role", req.user.role);
+      }
+
+      if (req.user && req.user.isVisitor) {
+        proxyReq.setHeader("x-visitor-mode", "true");
+      }
     },
   });
 };
 
 const registerProxyRoutes = (app) => {
+  // Parse JWT once at gateway level so user context can be forwarded to services.
+  app.use("/api", authorize(["admin", "customer"], { allowVisitor: true }));
+
   app.use(
     "/api/auth",
     buildProxy(SERVICES.auth, {
